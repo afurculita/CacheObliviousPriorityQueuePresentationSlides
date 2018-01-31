@@ -77,7 +77,6 @@
     \begin{frame}{Priority queues}
         \begin{itemize}
             \item Maintains a set of elements each with a priority (or key) under the operations insert, delete, and deletemin
-            \item Analyze in the I/O model for optimal off-line cache replacement strategy: If the main memory is full, the ideal block in main memory is elected for replacement based on the future characteristics of the algorithm
         \end{itemize}
     \end{frame}
     
@@ -143,6 +142,20 @@
     \item Can be performed in \(O(X^\frac{1}{2} + \frac{X}{B}\log_\frac{M}{B} \frac{X}{B})\) memory transfers amortized
     \end{itemize}
     \end{frame}
+    
+    \begin{frame}{Push}
+    \framesubtitle{Steps}
+    To insert \textit{X} elements into level \(X^\frac{3}{2}\), we need to follow these steps:
+    \begin{enumerate}
+    \item Sort the \textit{X} elements
+    \item Distribute the elements in the sorted list into the \(X^\frac{1}{2}\) down buffers of level \(X^\frac{3}{2}\) by scanning through the list and simultaneously visiting the down buffers in (linked) order.
+    \item If the down buffer runs full, split the buffer
+into two down buffers each containing X elements.
+	\item If the level already had the
+maximum number \(X^\frac{1}{2}\) of down buffers before the split, remove the last down buffer by inserting the less than \(2X\) elements  into the up buffer.
+	\item If the up buffer runs full, all of these elements are recursively pushed into the next level up.
+    \end{enumerate}
+    \end{frame}
 
     \begin{frame}{Operations}
     \framesubtitle{Pull}
@@ -162,10 +175,50 @@
     \begin{frame}{Graph algorithms applications and results}
     Using the cache oblivious priority queue, there can be developed cache oblivious algorithms for several graph problems that uses the same number of memory accesses as a cache-aware algorithm:
     \begin{itemize}
-    \item The list ranking, the Euler Tour, BFS, DFS, and centroid decomposition problems on a \textit{V} node list can be solved in \(O(sort(V))\) memory accesses
-    \item The DFS or BFS tree of a directed graph can be computed in \(O((V + \frac{E}{B})\log_2 V + sort(E)\) memory accesses.
-    \item The BFS tree of an undirected graph can be computed cache-obliviously in \(O(V + sort(E)\) memory accesses.
+    \item The list ranking, the Euler Tour, BFS, DFS, and centroid decomposition problems on a \textit{V} node list can be solved in \(O(\frac{V}{B}\log_\frac{M}{B} \frac{V}{B})\) memory accesses
+    \item The DFS or BFS tree of a directed graph can be computed in \(O((V + \frac{E}{B})\log_2 V + \frac{E}{B}\log_\frac{E}{B} \frac{E}{B})\) memory accesses.
+    \item The BFS tree of an undirected graph can be computed cache-obliviously in \(O(N + \frac{E}{B}\log_\frac{M}{B} \frac{E}{B})\) memory accesses.
     \end{itemize}
+    \end{frame}
+    
+    \begin{frame}{Graph algorithms}
+    \framesubtitle{List ranking}
+    \begin{block}{List ranking problem}
+    	Given a linked list of \(V\) nodes, each with a pointer (edge) to the next node in the list, stored as an unordered sequence, determine the rank of each node \(v\), that is, the number of edges from \(v\) to the end of the list.
+    \end{block}
+    \end{frame}
+    
+    \begin{frame}{List ranking}
+    \framesubtitle{Cache oblivious algorithm}
+    The Cache oblivious algorithm for list ranking extends the existing I/O model algorithms by replacing the I/O model priority queues with cache oblivious priority queues.
+    \bigskip
+    \begin{block}{Chiang I/O Model algorithm}
+    Find an independent set of \(O(V\)) nodes (nodes without edges
+to each other), contract the edges incident to the nodes in
+this set ("bridge out" the nodes in the independent set),
+recursively rank the remaining list, and finally reintegrate the contracted nodes in the list (compute their rank).
+    \end{block}
+    \end{frame}
+    
+    \begin{frame}{List ranking}
+    \framesubtitle{Chiang I/O Model algorithms adapted to Cache oblivious}
+    The independent set algorithm of Chiang is
+based on 3-coloring algorithms. It consists of the following steps:
+    \begin{enumerate}
+    \item the list is split into two sets consisting
+of forward running segments (forward lists) and backward
+running segments (backward lists). It is performed using a cache oblivious scanning.
+	\item the nodes in the forward lists are colored red or blue by coloring the head nodes red and the other nodes alternatingly red and blue. The coloring is performed using a cache oblivious priority queue.
+    \item the nodes in the backward lists are colored green and blue in a similar way, with the head nodes being colored green.
+    \end{enumerate}
+    \end{frame}
+    
+    \begin{frame}{List ranking}
+    \framesubtitle{Chiang I/O Model algorithms adapted to Cache oblivious}
+    As a result of these 3 steps, every node is colored with one color, except for the heads/tails which have two colors. 
+    \bigskip
+    
+    By coloring a head/tail node red unless it was initially colored blue and green, in which case it is colored green, a 3-coloring is obtained.
     \end{frame}
 
     \begin{frame}[label=bibliography]{Bibliography}
